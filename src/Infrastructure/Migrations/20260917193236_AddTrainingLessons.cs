@@ -24,10 +24,14 @@ namespace TrainingCatalog.Infrastructure.Migrations
                 nullable: false,
                 defaultValue: 1);
 
-            migrationBuilder.AddCheckConstraint(
-                name: "CK_Trainings_DurationHours_Positive",
-                table: "Trainings",
-                sql: "\"DurationHours\" > 0");
+            migrationBuilder.Sql("""
+                UPDATE "Trainings"
+                SET "LessonCount" = CASE
+                        WHEN "DurationHours" > 0 THEN "DurationHours"
+                        ELSE 1
+                    END,
+                    "LessonDurationHours" = 1;
+                """);
 
             migrationBuilder.AddCheckConstraint(
                 name: "CK_Trainings_LessonCount_Positive",
@@ -48,10 +52,6 @@ namespace TrainingCatalog.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropCheckConstraint(
-                name: "CK_Trainings_DurationHours_Positive",
-                table: "Trainings");
-
             migrationBuilder.DropCheckConstraint(
                 name: "CK_Trainings_LessonCount_Positive",
                 table: "Trainings");

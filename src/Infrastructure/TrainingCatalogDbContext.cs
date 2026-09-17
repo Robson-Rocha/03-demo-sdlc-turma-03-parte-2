@@ -16,7 +16,6 @@ public sealed class TrainingCatalogDbContext(DbContextOptions<TrainingCatalogDbC
 
         training.ToTable("Trainings", table =>
         {
-            table.HasCheckConstraint("CK_Trainings_DurationHours_Positive", "\"DurationHours\" > 0");
             table.HasCheckConstraint("CK_Trainings_LessonCount_Positive", "\"LessonCount\" > 0");
             table.HasCheckConstraint("CK_Trainings_LessonDurationHours_Range", "\"LessonDurationHours\" > 0 AND \"LessonDurationHours\" <= 4");
             table.HasCheckConstraint("CK_Trainings_LessonSchedule_WithinDuration", "\"LessonCount\" * \"LessonDurationHours\" <= \"DurationHours\"");

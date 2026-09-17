@@ -79,8 +79,6 @@ namespace TrainingCatalog.Infrastructure.Migrations
 
                     b.ToTable("Trainings", null, t =>
                         {
-                            t.HasCheckConstraint("CK_Trainings_DurationHours_Positive", "\"DurationHours\" > 0");
-
                             t.HasCheckConstraint("CK_Trainings_LessonCount_Positive", "\"LessonCount\" > 0");
 
                             t.HasCheckConstraint("CK_Trainings_LessonDurationHours_Range", "\"LessonDurationHours\" > 0 AND \"LessonDurationHours\" <= 4");

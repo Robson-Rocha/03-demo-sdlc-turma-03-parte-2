@@ -31,10 +31,10 @@
                                 <MudNumericField @bind-Value="durationHours" Label="Carga horária" Variant="Variant.Outlined" Margin="Margin.Dense" Min="1" Required="true" RequiredError="A carga horária deve ser maior que zero." Error='@HasFieldError("durationHours")' ErrorText='@GetFieldError("durationHours")' Disabled="@isSubmitting" />
                             </MudItem>
                             <MudItem xs="12" sm="6">
-                                <MudNumericField @bind-Value="lessonCount" Label="Quantidade de aulas" Variant="Variant.Outlined" Margin="Margin.Dense" Min="1" Required="true" RequiredError="A quantidade de aulas deve ser maior que zero." Error='@HasFieldError("lessonCount")' ErrorText='@GetFieldError("lessonCount")' Disabled="@isSubmitting" />
+                                <MudNumericField T="int?" @bind-Value="lessonCount" Label="Quantidade de aulas" Variant="Variant.Outlined" Margin="Margin.Dense" Min="1" Required="true" RequiredError="A quantidade de aulas deve ser maior que zero." Error='@HasFieldError("lessonCount")' ErrorText='@GetFieldError("lessonCount")' Disabled="@isSubmitting" />
                             </MudItem>
                             <MudItem xs="12" sm="6">
-                                <MudNumericField @bind-Value="lessonDurationHours" Label="Duração por aula (h)" Variant="Variant.Outlined" Margin="Margin.Dense" Min="1" Max="4" Required="true" RequiredError="A duração por aula deve ser de 1 a 4 horas." Error='@HasFieldError("lessonDurationHours")' ErrorText='@GetFieldError("lessonDurationHours")' Disabled="@isSubmitting" />
+                                <MudNumericField T="int?" @bind-Value="lessonDurationHours" Label="Duração por aula (h)" Variant="Variant.Outlined" Margin="Margin.Dense" Min="1" Max="4" Required="true" RequiredError="A duração por aula deve ser de 1 a 4 horas." Error='@HasFieldError("lessonDurationHours")' ErrorText='@GetFieldError("lessonDurationHours")' Disabled="@isSubmitting" />
                             </MudItem>
                         </MudGrid>
 
@@ -119,8 +119,8 @@
     private string description = string.Empty;
     private DateTime? startDate;
     private int durationHours;
-    private int lessonCount;
-    private int lessonDurationHours;
+    private int? lessonCount;
+    private int? lessonDurationHours;
     private string? errorMessage;
     private string? successMessage;
     private bool isLoading = true;
@@ -178,8 +178,8 @@
                 description,
                 startDate?.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
                 durationHours,
-                lessonCount,
-                lessonDurationHours);
+                lessonCount ?? 0,
+                lessonDurationHours ?? 0);
             using var response = await Http.PostAsJsonAsync("api/trainings", request);
 
             if (response.IsSuccessStatusCode)
@@ -256,7 +256,7 @@
         description = string.Empty;
         startDate = null;
         durationHours = 0;
-        lessonCount = 0;
-        lessonDurationHours = 0;
+        lessonCount = null;
+        lessonDurationHours = null;
     }
 }

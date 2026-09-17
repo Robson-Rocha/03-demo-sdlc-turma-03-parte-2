@@ -21,12 +21,6 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-	var dbContext = scope.ServiceProvider.GetRequiredService<TrainingCatalogDbContext>();
-	dbContext.Database.Migrate();
-}
-
 if (!app.Environment.IsDevelopment())
 {
 	app.UseHttpsRedirection();
@@ -41,45 +35,7 @@ if (app.Environment.IsDevelopment())
 
 app.MapPost("/api/trainings", async (CreateTrainingRequest request, TrainingCatalogDbContext dbContext) =>
 {
-	var errors = new Dictionary<string, string[]>();
-
-	if (string.IsNullOrWhiteSpace(request.Title))
-	{
-		errors["title"] = ["O título é obrigatório."];
-	}
-
-	if (string.IsNullOrWhiteSpace(request.Description))
-	{
-		errors["description"] = ["A descrição é obrigatória."];
-	}
-
-	var startDate = default(DateOnly);
-
-	if (string.IsNullOrWhiteSpace(request.StartDate) ||
-		!DateOnly.TryParseExact(request.StartDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out startDate))
-	{
-		errors["startDate"] = ["A data de início deve ser informada no formato YYYY-MM-DD."];
-	}
-
-	if (request.DurationHours <= 0)
-	{
-		errors["durationHours"] = ["A carga horária deve ser maior que zero."];
-	}
-
-	if (request.LessonCount <= 0)
-	{
-		errors["lessonCount"] = ["A quantidade de aulas deve ser maior que zero."];
-	}
-
-	if (request.LessonDurationHours <= 0 || request.LessonDurationHours > 4)
-	{
-		errors["lessonDurationHours"] = ["A duração de cada aula deve ser maior que zero e menor ou igual a quatro horas."];
-	}
-
-	if (request.LessonCount > 0 && request.LessonDurationHours > 0 && (long)request.LessonCount * request.LessonDurationHours > request.DurationHours)
-	{
-		errors["lessonDurationHours"] = ["A duração total das aulas não pode ultrapassar a carga horária do treinamento."];
-	}
+	var errors = ValidateTrainingRequest(request, out var startDate);
 
 	if (errors.Count > 0)
 	{
@@ -242,45 +198,7 @@ app.MapGet("/api/trainings/{id:guid}", async (Guid id, TrainingCatalogDbContext 
 
 app.MapPut("/api/trainings/{id:guid}", async (Guid id, CreateTrainingRequest request, TrainingCatalogDbContext dbContext) =>
 {
-	var errors = new Dictionary<string, string[]>();
-
-	if (string.IsNullOrWhiteSpace(request.Title))
-	{
-		errors["title"] = ["O título é obrigatório."];
-	}
-
-	if (string.IsNullOrWhiteSpace(request.Description))
-	{
-		errors["description"] = ["A descrição é obrigatória."];
-	}
-
-	var startDate = default(DateOnly);
-
-	if (string.IsNullOrWhiteSpace(request.StartDate) ||
-		!DateOnly.TryParseExact(request.StartDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out startDate))
-	{
-		errors["startDate"] = ["A data de início deve ser informada no formato YYYY-MM-DD."];
-	}
-
-	if (request.DurationHours <= 0)
-	{
-		errors["durationHours"] = ["A carga horária deve ser maior que zero."];
-	}
-
-	if (request.LessonCount <= 0)
-	{
-		errors["lessonCount"] = ["A quantidade de aulas deve ser maior que zero."];
-	}
-
-	if (request.LessonDurationHours <= 0 || request.LessonDurationHours > 4)
-	{
-		errors["lessonDurationHours"] = ["A duração de cada aula deve ser maior que zero e menor ou igual a quatro horas."];
-	}
-
-	if (request.LessonCount > 0 && request.LessonDurationHours > 0 && (long)request.LessonCount * request.LessonDurationHours > request.DurationHours)
-	{
-		errors["lessonDurationHours"] = ["A duração total das aulas não pode ultrapassar a carga horária do treinamento."];
-	}
+	var errors = ValidateTrainingRequest(request, out var startDate);
 
 	if (errors.Count > 0)
 	{
@@ -340,5 +258,49 @@ app.MapDelete("/api/trainings/{id:guid}", async (Guid id, TrainingCatalogDbConte
     .Produces(StatusCodes.Status404NotFound);
 
 app.Run();
+
+static Dictionary<string, string[]> ValidateTrainingRequest(CreateTrainingRequest request, out DateOnly startDate)
+{
+	var errors = new Dictionary<string, string[]>();
+	startDate = default;
+
+	if (string.IsNullOrWhiteSpace(request.Title))
+	{
+		errors["title"] = ["O título é obrigatório."];
+	}
+
+	if (string.IsNullOrWhiteSpace(request.Description))
+	{
+		errors["description"] = ["A descrição é obrigatória."];
+	}
+
+	if (string.IsNullOrWhiteSpace(request.StartDate) ||
+		!DateOnly.TryParseExact(request.StartDate, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out startDate))
+	{
+		errors["startDate"] = ["A data de início deve ser informada no formato YYYY-MM-DD."];
+	}
+
+	if (request.DurationHours <= 0)
+	{
+		errors["durationHours"] = ["A carga horária deve ser maior que zero."];
+	}
+
+	if (request.LessonCount <= 0)
+	{
+		errors["lessonCount"] = ["A quantidade de aulas deve ser maior que zero."];
+	}
+
+	if (request.LessonDurationHours <= 0 || request.LessonDurationHours > 4)
+	{
+		errors["lessonDurationHours"] = ["A duração de cada aula deve ser maior que zero e menor ou igual a quatro horas."];
+	}
+
+	if (request.LessonCount > 0 && request.LessonDurationHours > 0 && (long)request.LessonCount * request.LessonDurationHours > request.DurationHours)
+	{
+		errors["lessonDurationHours"] = ["A duração total das aulas não pode ultrapassar a carga horária do treinamento."];
+	}
+
+	return errors;
+}
 
 public partial class Program;
