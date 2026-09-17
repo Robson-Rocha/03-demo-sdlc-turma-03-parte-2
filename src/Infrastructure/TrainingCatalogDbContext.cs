@@ -14,7 +14,12 @@ public sealed class TrainingCatalogDbContext(DbContextOptions<TrainingCatalogDbC
     {
         var training = modelBuilder.Entity<TrainingEntity>();
 
-        training.ToTable("Trainings");
+        training.ToTable("Trainings", table =>
+        {
+            table.HasCheckConstraint("CK_Trainings_LessonCount_Positive", "\"LessonCount\" > 0");
+            table.HasCheckConstraint("CK_Trainings_LessonDurationHours_Range", "\"LessonDurationHours\" > 0 AND \"LessonDurationHours\" <= 4");
+            table.HasCheckConstraint("CK_Trainings_LessonSchedule_WithinDuration", "\"LessonCount\" * \"LessonDurationHours\" <= \"DurationHours\"");
+        });
         training.HasKey(entity => entity.Id);
         training.HasIndex(entity => entity.StartDate).IsUnique();
         training.Property(entity => entity.Title).IsRequired();
